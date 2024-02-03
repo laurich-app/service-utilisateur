@@ -1,5 +1,8 @@
 package com.example.serviceutilisateur.models;
 
+import java.util.Random;
+import java.util.UUID;
+
 public class Utilisateur {
     private Long id;
     private String pseudo;
@@ -7,7 +10,8 @@ public class Utilisateur {
     private String email;
 
     public Long getId() {
-        return id;
+        return new Random().nextLong();
+//        return id;
     }
 
     public String getPseudo() {

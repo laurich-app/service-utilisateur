@@ -5,11 +5,11 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 COPY ./ /app/
-COPY ./generatekeys.sh /app/joueur/generatekeys.sh
-COPY ./handle_start.sh /app/joueur/handle_start.sh
+COPY ./generatekeys.sh /app/generatekeys.sh
+COPY ./handle_start.sh /app/handle_start.sh
 
-RUN chmod a+x /app/joueur/generatekeys.sh
-RUN chmod a+x /app/joueur/handle_start.sh
+RUN chmod a+x /app/generatekeys.sh
+RUN chmod a+x /app/handle_start.sh
 
 # Exécutez Maven pour construire l'application
 # Définir le point d'entrée de l'application

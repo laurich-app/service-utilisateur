@@ -4,3 +4,8 @@ services:
     image: consul:1.15
     ports:
       - 8500:8500
+
+  serveur-conf:
+    image: ghcr.io/laurich-app/serveur-conf:0.0.3
+    ports:
+      - 8888:8888

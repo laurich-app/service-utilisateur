@@ -1,0 +1,17 @@
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "pseudo": "Bob",
+  "mdp": "Bobibi"
+}
+
+###
+
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "nouveauJoueur": "Bob",
+  "mdp": "Bobibi"
+}
