@@ -1,17 +1,21 @@
+###
+
+POST http://localhost:8080/auth/inscription
+Content-Type: application/json
+User-Agent: Intelij IDEA
+
+{
+  "pseudo": "Bob",
+  "email": "Bobibi@gmail.com",
+  "motDePasse": "MonMdp"
+}
+
+###
+
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
   "pseudo": "Bob",
-  "mdp": "Bobibi"
-}
-
-###
-
-POST http://localhost:8080/auth/register
-Content-Type: application/json
-
-{
-  "nouveauJoueur": "Bob",
   "mdp": "Bobibi"
 }

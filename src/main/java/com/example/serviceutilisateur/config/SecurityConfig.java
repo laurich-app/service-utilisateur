@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
     @Value("${public.key}")
@@ -42,8 +44,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(autorize -> autorize
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/connexion").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/inscription").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .csrf((csrf) -> csrf.disable())
@@ -75,20 +77,46 @@ public class SecurityConfig {
     }
 
     @Bean
-    Function<UtilisateurDAO, String> genererToken(JwtEncoder jwtEncoder) {
-        return joueur -> {
+    Function<UtilisateurDAO, String> genererAccessToken(JwtEncoder jwtEncoder) {
+        return user -> {
             Instant now = Instant.now();
 
             JwtClaimsSet claims = JwtClaimsSet.builder()
                     .issuer("self")
                     .issuedAt(now)
-                    .expiresAt(now.plus(1, ChronoUnit.HOURS))
-                    .subject(joueur.getId().toString())
+                    .expiresAt(now.plus(15, ChronoUnit.MINUTES))
+                    .subject(user.getId().toString())
                     // ICI AJOUTER LES ROLES
-                    .claim("scope", "")
+                    .claim("roles", user.getRoles())
                     .build();
 
             return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        };
+    }
+
+    @Bean
+    Function<UtilisateurDAO, String> genererRefreshToken(JwtEncoder jwtEncoder) {
+        return user -> {
+            Instant now = Instant.now();
+
+            JwtClaimsSet claims = JwtClaimsSet.builder()
+                    .issuer("self")
+                    .issuedAt(now)
+                    .expiresAt(now.plus(3, ChronoUnit.MONTHS))
+                    .subject(user.getId().toString())
+                    // ICI AJOUTER LES ROLES
+                    .claim("roles", user.getRoles())
+                    .build();
+
+            return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        };
+    }
+
+    @Bean(name = "vrt")
+    Function<String, Boolean> verifyRefreshTokenValidity(JwtDecoder jwtDecoder) {
+        return token -> {
+            Jwt jwt = jwtDecoder.decode(token);
+            return jwt.getExpiresAt().compareTo(Instant.now()) <= 0;
         };
     }
 }

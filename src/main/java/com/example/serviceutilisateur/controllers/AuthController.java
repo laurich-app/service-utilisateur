@@ -1,62 +1,85 @@
 package com.example.serviceutilisateur.controllers;
 
-import com.example.serviceutilisateur.dtos.ConnexionDTO;
-import com.example.serviceutilisateur.dtos.InscriptionDTO;
+import com.example.serviceutilisateur.dtos.in.ConnexionDTO;
+import com.example.serviceutilisateur.dtos.in.InscriptionControllerDTO;
+import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
+import com.example.serviceutilisateur.dtos.in.RefreshTokenDTO;
+import com.example.serviceutilisateur.dtos.out.InscriptionControllerOutDTO;
+import com.example.serviceutilisateur.dtos.out.TokenDTO;
+import com.example.serviceutilisateur.exceptions.*;
 import com.example.serviceutilisateur.facades.FacadeAuthentification;
 import com.example.serviceutilisateur.facades.FacadeAuthentificationImpl;
-import com.example.serviceutilisateur.models.UtilisateurDAO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.function.Function;
+import java.net.URI;
+import java.security.Principal;
 
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
     private final FacadeAuthentification facadeAuthentification;
     private final PasswordEncoder passwordEncoder;
-    private final Function<UtilisateurDAO, String> genererToken;
 
-    public AuthController(@Autowired FacadeAuthentificationImpl facadeAuthentification, @Autowired PasswordEncoder passwordEncoder, @Autowired Function<UtilisateurDAO, String> genererToken ) {
+    public AuthController(@Autowired FacadeAuthentificationImpl facadeAuthentification, @Autowired PasswordEncoder passwordEncoder ) {
         this.facadeAuthentification = facadeAuthentification;
         this.passwordEncoder = passwordEncoder;
-        this.genererToken = genererToken;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody ConnexionDTO loginDTO) {
-        String token = this.genererToken.apply(new UtilisateurDAO());
-        return ResponseEntity.ok().header("Authorization", "Bearer " +token).build();
-//        Joueur joueur;
-//        try {
-//            joueur = this.facadeJoueur.getJoueurByPseudo(loginDTO.pseudo());
-//        } catch (JoueurInexistantException e) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        if(passwordEncoder.matches(loginDTO.mdp(), joueur.getMdpJoueur())){
-//            String token = this.genererToken.apply(joueur);
-//            return ResponseEntity.ok().header("Authorization", "Bearer " +token).build();
-//        }
-//        return ResponseEntity.badRequest().build();
+    @PostMapping("/connexion")
+    public ResponseEntity<TokenDTO> login(@Valid @RequestBody ConnexionDTO loginDTO, @RequestHeader("User-Agent") String userAgent) {
+        try {
+            TokenDTO tokenDTO = this.facadeAuthentification.connexion(loginDTO, userAgent);
+            return ResponseEntity.ok().header("Authorization", "Bearer " +tokenDTO.accessToken()).build();
+        } catch (UtilisateurInconnueException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody InscriptionDTO registerDTO) {
-        return ResponseEntity.ok().build();
-//        Joueur joueur;
-//        try {
-//            joueur = this.facadeJoueur.inscription(registerDTO.nouveauJoueur(), this.passwordEncoder.encode(
-//                    registerDTO.mdp()));
-//        } catch(PseudoDejaPrisException p) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
-//                .buildAndExpand(joueur.getNomJoueur()).toUri();
-//        return ResponseEntity.created(location).build();
+    @PostMapping("/inscription")
+    public ResponseEntity<TokenDTO> register(@Valid @RequestBody InscriptionControllerDTO registerDTO, @RequestHeader("User-Agent") String userAgent) {
+        InscriptionDTO inscriptionDTO = new InscriptionDTO(
+                registerDTO.pseudo(),
+                registerDTO.email(),
+                this.passwordEncoder.encode(registerDTO.motDePasse()));
+        try {
+            InscriptionControllerOutDTO inscription = this.facadeAuthentification.inscription(inscriptionDTO, userAgent);
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
+                .buildAndExpand(inscription.utilisateur().id()).toUri();
+            return ResponseEntity.created(location).header("Authorization", "Bearer " +inscription.tokenDTO().accessToken()).build();
+        } catch (EmailDejaPrisException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @PostMapping("/token_raffraichissement")
+    public ResponseEntity<TokenDTO> tokenRaffraichissement(@Valid @RequestBody RefreshTokenDTO refreshTokenDTO, @RequestHeader("User-Agent") String userAgent, Principal principal) {
+        try {
+            TokenDTO tokenDTO = this.facadeAuthentification.genereTokenRaffraichissement(refreshTokenDTO, Long.valueOf(principal.getName()), userAgent);
+            return ResponseEntity.ok(tokenDTO);
+        } catch (TokenIncompatibleException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (RefreshTokenExpirerException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (UtilisateurInconnueException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @DeleteMapping("/deconnexion")
+    public ResponseEntity deconnexion(@RequestHeader("Authorization") String authorization) {
+        try {
+            String[] bearer = authorization.split(" ");
+            this.facadeAuthentification.deconnexion(bearer[1]);
+            return ResponseEntity.noContent().build();
+        }  catch (TokenInconnueException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

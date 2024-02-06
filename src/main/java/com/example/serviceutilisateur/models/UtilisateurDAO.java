@@ -1,5 +1,7 @@
 package com.example.serviceutilisateur.models;
 
+import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
+import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
 import com.example.serviceutilisateur.enums.RolesENUM;
 import jakarta.persistence.*;
 
@@ -19,7 +21,7 @@ public class UtilisateurDAO {
     @Column(name = "MOT_DE_PASSE")
     private String motDePasse;
 
-    @Column(name = "EMAIL")
+    @Column(name = "EMAIL", unique = true)
     private String email;
 
     @ElementCollection
@@ -29,6 +31,22 @@ public class UtilisateurDAO {
 
     @OneToMany(mappedBy = "utilisateur")
     private List<TokenDAO> tokens;
+
+    public static UtilisateurDAO fromDTO(InscriptionDTO inscriptionDTO) {
+        UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
+        utilisateurDAO.setEmail(inscriptionDTO.email());
+        utilisateurDAO.setMotDePasse(inscriptionDTO.motDePasse());
+        utilisateurDAO.setPseudo(inscriptionDTO.pseudo());
+        return utilisateurDAO;
+    }
+
+    public static UtilisateurOutDTO toDTO(UtilisateurDAO utilisateurDAO) {
+        return new UtilisateurOutDTO(
+                utilisateurDAO.getId(),
+                utilisateurDAO.getPseudo(),
+                utilisateurDAO.getEmail()
+        );
+    }
 
     public Long getId() {
         return id;

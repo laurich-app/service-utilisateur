@@ -1,5 +1,6 @@
 package com.example.serviceutilisateur.models;
 
+import com.example.serviceutilisateur.dtos.out.TokenDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,13 @@ public class TokenDAO {
 
     @ManyToOne
     private UtilisateurDAO utilisateur;
+
+    public static TokenDTO toDTO(TokenDAO tokenDAO) {
+        return new TokenDTO(
+                tokenDAO.getAccessToken(),
+                tokenDAO.getRefreshToken()
+        );
+    }
 
     public Long getId() {
         return id;
