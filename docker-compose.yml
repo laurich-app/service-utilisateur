@@ -9,3 +9,17 @@ services:
     image: ghcr.io/laurich-app/serveur-conf:0.0.3
     ports:
       - 8888:8888
+
+  postgres:
+    image: postgres:12.17
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=service-utilisateur
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pswd
+
+  adminer:
+    image: adminer
+    ports:
+      - 8081:8080

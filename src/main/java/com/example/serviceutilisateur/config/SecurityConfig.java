@@ -1,6 +1,6 @@
 package com.example.serviceutilisateur.config;
 
-import com.example.serviceutilisateur.models.Utilisateur;
+import com.example.serviceutilisateur.models.UtilisateurDAO;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -75,7 +75,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    Function<Utilisateur, String> genererToken(JwtEncoder jwtEncoder) {
+    Function<UtilisateurDAO, String> genererToken(JwtEncoder jwtEncoder) {
         return joueur -> {
             Instant now = Instant.now();
 
