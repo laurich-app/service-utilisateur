@@ -36,7 +36,7 @@ public class AuthController {
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody ConnexionDTO loginDTO, @RequestHeader("User-Agent") String userAgent) {
         try {
             TokenDTO tokenDTO = this.facadeAuthentification.connexion(loginDTO, userAgent);
-            return ResponseEntity.ok().header("Authorization", "Bearer " +tokenDTO.accessToken()).build();
+            return ResponseEntity.ok().header("Authorization", "Bearer " +tokenDTO.accessToken()).body(tokenDTO);
         } catch (UtilisateurInconnueException e) {
             return ResponseEntity.notFound().build();
         }
@@ -52,23 +52,21 @@ public class AuthController {
             InscriptionControllerOutDTO inscription = this.facadeAuthentification.inscription(inscriptionDTO, userAgent);
             URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
                 .buildAndExpand(inscription.utilisateur().id()).toUri();
-            return ResponseEntity.created(location).header("Authorization", "Bearer " +inscription.tokenDTO().accessToken()).build();
+            return ResponseEntity.created(location).header("Authorization", "Bearer " +inscription.tokenDTO().accessToken()).body(inscription.tokenDTO());
         } catch (EmailDejaPrisException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
     @PostMapping("/token_raffraichissement")
-    public ResponseEntity<TokenDTO> tokenRaffraichissement(@Valid @RequestBody RefreshTokenDTO refreshTokenDTO, @RequestHeader("User-Agent") String userAgent, Principal principal) {
+    public ResponseEntity<TokenDTO> tokenRaffraichissement(@Valid @RequestBody RefreshTokenDTO refreshTokenDTO, @RequestHeader("User-Agent") String userAgent) {
         try {
-            TokenDTO tokenDTO = this.facadeAuthentification.genereTokenRaffraichissement(refreshTokenDTO, Long.valueOf(principal.getName()), userAgent);
-            return ResponseEntity.ok(tokenDTO);
+            TokenDTO tokenDTO = this.facadeAuthentification.genereTokenRaffraichissement(refreshTokenDTO, userAgent);
+            return ResponseEntity.ok().header("Authorization", "Bearer " +tokenDTO.accessToken()).body(tokenDTO);
         } catch (TokenIncompatibleException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (RefreshTokenExpirerException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (UtilisateurInconnueException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

@@ -1,11 +1,8 @@
 package com.example.serviceutilisateur.dtos.in;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
-public record InscriptionControllerDTO(@NotNull @Min(2) @Max(18) String pseudo,
+public record InscriptionControllerDTO(@NotNull @Size(min = 2, max = 18) String pseudo,
                                        @NotNull @Email String email,
-                                       @NotNull @Min(3) @Max(18) CharSequence motDePasse) {
+                                       @NotNull @Size(min = 4, max = 18) CharSequence motDePasse) {
 }

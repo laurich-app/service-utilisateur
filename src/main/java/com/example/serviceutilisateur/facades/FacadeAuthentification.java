@@ -29,14 +29,12 @@ public interface FacadeAuthentification {
     /**
      * Permet de regénérer une paire de token d'accès.
      * @param refreshTokenDTO
-     * @param userId
      * @param userAgent
      * @return
      * @throws TokenIncompatibleException
      * @throws RefreshTokenExpirerException
-     * @throws UtilisateurInconnueException
      */
-    public TokenDTO genereTokenRaffraichissement(RefreshTokenDTO refreshTokenDTO, Long userId, String userAgent) throws TokenIncompatibleException, RefreshTokenExpirerException, UtilisateurInconnueException;
+    public TokenDTO genereTokenRaffraichissement(RefreshTokenDTO refreshTokenDTO, String userAgent) throws TokenIncompatibleException, RefreshTokenExpirerException;
 
     /**
      * Permet de déconnecter l'utilisateur authentifier.

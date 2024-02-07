@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(autorize -> autorize
                         .requestMatchers(HttpMethod.POST, "/auth/connexion").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/inscription").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/token_raffraichissement").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .csrf((csrf) -> csrf.disable())
@@ -102,7 +103,7 @@ public class SecurityConfig {
             JwtClaimsSet claims = JwtClaimsSet.builder()
                     .issuer("self")
                     .issuedAt(now)
-                    .expiresAt(now.plus(3, ChronoUnit.MONTHS))
+                    .expiresAt(now.plus(180, ChronoUnit.DAYS))
                     .subject(user.getId().toString())
                     // ICI AJOUTER LES ROLES
                     .claim("roles", user.getRoles())
@@ -116,7 +117,7 @@ public class SecurityConfig {
     Function<String, Boolean> verifyRefreshTokenValidity(JwtDecoder jwtDecoder) {
         return token -> {
             Jwt jwt = jwtDecoder.decode(token);
-            return jwt.getExpiresAt().compareTo(Instant.now()) <= 0;
+            return jwt.getExpiresAt().compareTo(Instant.now()) > 0;
         };
     }
 }

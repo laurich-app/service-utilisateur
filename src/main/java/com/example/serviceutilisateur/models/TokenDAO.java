@@ -19,10 +19,10 @@ public class TokenDAO {
     @Column(name = "USER_AGENT")
     private String userAgent;
 
-    @Column(name = "ACCESS_TOKEN")
+    @Column(name = "ACCESS_TOKEN", length = 1000)
     private String accessToken;
 
-    @Column(name = "REFRESH_TOKEN")
+    @Column(name = "REFRESH_TOKEN", length = 1000)
     private String refreshToken;
 
     @ManyToOne

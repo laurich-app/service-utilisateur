@@ -31,6 +31,7 @@ public class TokenService {
         tokenDAO.setRefreshToken(this.genererRefreshToken.apply(utilisateurDAO));
         tokenDAO.setUserAgent(userAgent);
         tokenDAO.setDateCreation(LocalDateTime.now());
+        tokenDAO.setUtilisateur(utilisateurDAO);
         return tokenDAO;
     }
 

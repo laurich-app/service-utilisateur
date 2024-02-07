@@ -10,5 +10,6 @@ public interface TokenRepository extends JpaRepository<TokenDAO, Long> {
     @Query("SELECT p FROM TokenDAO p WHERE p.accessToken = :accessToken AND p.refreshToken = :refreshToken")
     TokenDAO findByTokens(String accessToken, String refreshToken);
 
+    @Query("SELECT p FROM TokenDAO p WHERE p.accessToken = :accessToken")
     TokenDAO findByAccessToken(String accessToken);
 }

@@ -10,6 +10,7 @@ import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
 import com.example.serviceutilisateur.dtos.pagination.Paginate;
 import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
 import com.example.serviceutilisateur.dtos.pagination.Pagination;
+import com.example.serviceutilisateur.enums.RolesENUM;
 import com.example.serviceutilisateur.exceptions.*;
 import com.example.serviceutilisateur.models.TokenDAO;
 import com.example.serviceutilisateur.models.UtilisateurDAO;
@@ -63,6 +64,8 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
     public InscriptionControllerOutDTO inscription(InscriptionDTO inscriptionDTO, String userAgent) throws EmailDejaPrisException {
         UtilisateurDAO utilisateurDAO = UtilisateurDAO.fromDTO(inscriptionDTO);
 
+        utilisateurDAO.setRoles(List.of(RolesENUM.ROLE_USER));
+
         if(this.utilisateurRepository.findByEmail(utilisateurDAO.getEmail()) != null)
             throw new EmailDejaPrisException();
 
@@ -77,7 +80,7 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
     }
 
     @Override
-    public TokenDTO genereTokenRaffraichissement(RefreshTokenDTO refreshTokenDTO, Long userId, String userAgent) throws TokenIncompatibleException, RefreshTokenExpirerException, UtilisateurInconnueException {
+    public TokenDTO genereTokenRaffraichissement(RefreshTokenDTO refreshTokenDTO, String userAgent) throws TokenIncompatibleException, RefreshTokenExpirerException {
         TokenDAO tokenDAO = this.tokenRepository.findByTokens(refreshTokenDTO.accessToken(), refreshTokenDTO.refreshToken());
         if(Objects.isNull(tokenDAO))
             throw new TokenIncompatibleException();
@@ -85,14 +88,11 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
         if(Boolean.FALSE.equals(this.tokenService.verifRefreshToken(refreshTokenDTO.refreshToken())))
             throw new RefreshTokenExpirerException();
 
-        Optional<UtilisateurDAO> utilisateurDAO = this.utilisateurRepository.findById(userId);
-        if(utilisateurDAO.isEmpty())
-            throw new UtilisateurInconnueException();
-
         // Suppression des anciens tokens
         this.tokenRepository.delete(tokenDAO);
+
         // Création des nouveaux
-        TokenDAO token = this.tokenRepository.save(this.tokenService.genereToken(utilisateurDAO.get(), userAgent));
+        TokenDAO token = this.tokenRepository.save(this.tokenService.genereToken(tokenDAO.getUtilisateur(), userAgent));
         return TokenDAO.toDTO(token);
     }
 

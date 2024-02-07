@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UtilisateurOutDTO> getUserById(@RequestParam(name = "id") Long id) {
+    public ResponseEntity<UtilisateurOutDTO> getUserById(@PathVariable(name = "id") Long id) {
         try {
             UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(id);
             return ResponseEntity.ok(utilisateur);

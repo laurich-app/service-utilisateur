@@ -1,4 +1,4 @@
-###
+### Inscription
 
 POST http://localhost:8080/auth/inscription
 Content-Type: application/json
@@ -10,12 +10,98 @@ User-Agent: Intelij IDEA
   "motDePasse": "MonMdp"
 }
 
-###
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+    if(response.status === 201) {
+        client.global.set("accessToken", response.headers.valueOf("Authorization").slice(7));
+    }
+%}
 
-POST http://localhost:8080/auth/login
+### Profil
+
+GET http://localhost:8080/users/me
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Deconnexion
+
+DELETE http://localhost:8080/auth/deconnexion
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 204, "Response status is not 204");
+    });
+%}
+
+### Connexion
+
+POST http://localhost:8080/auth/connexion
 Content-Type: application/json
 
 {
-  "pseudo": "Bob",
-  "mdp": "Bobibi"
+  "email": "Bobibi@gmail.com",
+  "motDePasse": "MonMdp"
 }
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    if(response.status === 200) {
+        client.global.set("accessToken", response.headers.valueOf("Authorization").slice(7));
+        client.global.set("refreshToken", response.body.refreshToken);
+    }
+%}
+
+### Token de raffraichissement
+
+POST http://localhost:8080/auth/token_raffraichissement
+Content-Type: application/json
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    if(response.status === 200) {
+        client.global.set("accessToken", response.headers.valueOf("Authorization").slice(7));
+    }
+%}
+
+### User by ID
+
+GET http://localhost:8080/users/1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### All users
+
+GET http://localhost:8080/users/me
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

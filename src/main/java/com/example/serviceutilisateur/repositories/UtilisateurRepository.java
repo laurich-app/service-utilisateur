@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UtilisateurRepository extends JpaRepository<UtilisateurDAO, Long> {
+    @Query("SELECT p FROM UtilisateurDAO p WHERE p.email = :email")
     UtilisateurDAO findByEmail(String email);
 }
