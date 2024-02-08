@@ -106,3 +106,36 @@ Authorization: Bearer {{accessToken}}
         client.assert(response.status === 403, "Response status is not 403");
     });
 %}
+
+### Connexion (admin)
+
+POST http://localhost:8080/auth/connexion
+Content-Type: application/json
+
+{
+  "email": "root@root.com",
+  "motDePasse": "root"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    if(response.status === 200) {
+        client.global.set("accessToken", response.headers.valueOf("Authorization").slice(7));
+        client.global.set("refreshToken", response.body.refreshToken);
+    }
+%}
+
+### All users (admin)
+
+GET http://localhost:8080/users
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        // Unauthorized, only admin is available :)
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
