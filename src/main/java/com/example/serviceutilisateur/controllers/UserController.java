@@ -3,14 +3,17 @@ package com.example.serviceutilisateur.controllers;
 import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
 import com.example.serviceutilisateur.dtos.pagination.Paginate;
 import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
+import com.example.serviceutilisateur.enums.RolesENUM;
 import com.example.serviceutilisateur.exceptions.UtilisateurInconnueException;
 import com.example.serviceutilisateur.facades.FacadeUtilisateur;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,8 +51,8 @@ public class UserController {
         }
     }
 
-    @Secured("ROLE_ADMIN")
     @GetMapping()
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Paginate<UtilisateurOutDTO>> getUsers(
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
             @RequestParam(name = "limit", defaultValue = "10", required = false) int limit,

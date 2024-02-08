@@ -64,7 +64,7 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
     public InscriptionControllerOutDTO inscription(InscriptionDTO inscriptionDTO, String userAgent) throws EmailDejaPrisException {
         UtilisateurDAO utilisateurDAO = UtilisateurDAO.fromDTO(inscriptionDTO);
 
-        utilisateurDAO.setRoles(List.of(RolesENUM.ROLE_USER));
+        utilisateurDAO.setRoles(List.of(RolesENUM.USER));
 
         if(this.utilisateurRepository.findByEmail(utilisateurDAO.getEmail()) != null)
             throw new EmailDejaPrisException();

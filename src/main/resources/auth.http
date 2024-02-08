@@ -96,12 +96,13 @@ Authorization: Bearer {{accessToken}}
 
 ### All users
 
-GET http://localhost:8080/users/me
+GET http://localhost:8080/users
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 > {%
     client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
+        // Unauthorized, only admin is available :)
+        client.assert(response.status === 403, "Response status is not 403");
     });
 %}
