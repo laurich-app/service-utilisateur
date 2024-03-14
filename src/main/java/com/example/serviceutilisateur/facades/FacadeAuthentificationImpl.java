@@ -16,7 +16,9 @@ import com.example.serviceutilisateur.models.TokenDAO;
 import com.example.serviceutilisateur.models.UtilisateurDAO;
 import com.example.serviceutilisateur.repositories.TokenRepository;
 import com.example.serviceutilisateur.repositories.UtilisateurRepository;
+import com.example.serviceutilisateur.services.ServiceRabbitMQSender;
 import com.example.serviceutilisateur.utils.PageableUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +37,19 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final ServiceRabbitMQSender serviceRabbitMQSender;
 
     public FacadeAuthentificationImpl(
             @Autowired TokenRepository tokenRepository,
             @Autowired UtilisateurRepository utilisateurRepository,
             @Autowired PasswordEncoder passwordEncoder,
-            @Autowired TokenService tokenService) {
+            @Autowired TokenService tokenService,
+            @Autowired ServiceRabbitMQSender serviceRabbitMQSender) {
         this.tokenRepository = tokenRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.serviceRabbitMQSender = serviceRabbitMQSender;
     }
 
     @Override
@@ -61,6 +66,7 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
     }
 
     @Override
+    @Transactional
     public InscriptionControllerOutDTO inscription(InscriptionDTO inscriptionDTO, String userAgent) throws EmailDejaPrisException {
         UtilisateurDAO utilisateurDAO = UtilisateurDAO.fromDTO(inscriptionDTO);
 
@@ -73,6 +79,9 @@ public class FacadeAuthentificationImpl implements FacadeAuthentification {
         // Génère des clés
         TokenDAO tokenDAO = this.tokenRepository.save(this.tokenService.genereToken(utilisateurDAO, userAgent));
 
+        this.serviceRabbitMQSender.inscriptionBienvenue(
+                UtilisateurDAO.toInscriptionBienvenueDTO(utilisateurDAO)
+        );
         return new InscriptionControllerOutDTO(
                 TokenDAO.toDTO(tokenDAO),
                 UtilisateurDAO.toDTO(utilisateurDAO)

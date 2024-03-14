@@ -105,6 +105,7 @@ public class SecurityConfig {
                     .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                     .subject(user.getId().toString())
                     // ICI AJOUTER LES ROLES
+                    .claim("email", user.getEmail())
                     .claim("roles", user.getRoles())
                     .build();
 

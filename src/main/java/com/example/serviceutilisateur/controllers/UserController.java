@@ -9,6 +9,8 @@ import com.example.serviceutilisateur.facades.FacadeUtilisateur;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.util.Set;
 @Controller
 @RequestMapping("/users")
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final FacadeUtilisateur facadeUtilisateur;
     private final Validator validator;
 
@@ -34,9 +37,11 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UtilisateurOutDTO> me(Principal principal) {
         try {
+            logger.info("[Users - Me] {}", principal.getName());
             UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(Long.valueOf(principal.getName()));
             return ResponseEntity.ok(utilisateur);
         } catch (UtilisateurInconnueException e) {
+            logger.error("[Users - Me] {}", e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -44,9 +49,11 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UtilisateurOutDTO> getUserById(@PathVariable(name = "id") Long id) {
         try {
+            logger.info("[Users - getUserById] {}", id);
             UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(id);
             return ResponseEntity.ok(utilisateur);
         } catch (UtilisateurInconnueException e) {
+            logger.error("[Users - getUserById] {}", e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -60,6 +67,7 @@ public class UserController {
             @RequestParam(name = "sortDirection", required = false) Sort.Direction sortDirection) {
 
         PaginateRequestDTO paginateRequest = new PaginateRequestDTO(page, limit, sort, sortDirection);
+        logger.info("[Users - getUsers] {}", paginateRequest);
         Set<ConstraintViolation<PaginateRequestDTO>> violations = this.validator.validate(paginateRequest);
         if(!violations.isEmpty()) {
             return ResponseEntity.badRequest().build();

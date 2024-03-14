@@ -2,6 +2,7 @@ package com.example.serviceutilisateur.models;
 
 import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
 import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
+import com.example.serviceutilisateur.dtos.rabbits.InscriptionBienvenueDTO;
 import com.example.serviceutilisateur.enums.RolesENUM;
 import jakarta.persistence.*;
 
@@ -90,5 +91,12 @@ public class UtilisateurDAO {
 
     public void setTokens(List<TokenDAO> tokens) {
         this.tokens = tokens;
+    }
+
+    public static InscriptionBienvenueDTO toInscriptionBienvenueDTO(UtilisateurDAO utilisateurDAO) {
+        return new InscriptionBienvenueDTO(
+                utilisateurDAO.getEmail(),
+                utilisateurDAO.getPseudo()
+        );
     }
 }
