@@ -40,19 +40,15 @@ import java.util.function.Function;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
-    @Value("${public.key}")
-    RSAPublicKey key;
-
-    @Value("${private.key}")
-    RSAPrivateKey priv;
-
     @Value("#{'${cors.url.allowed}'.split(';')}")
-    List<String> corsUrlAllowed;
+    private List<String> corsUrlAllowed;
 
-    CustomAuthenticationProvider customAuthenticationProvider;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final GenerateKey generateKey;
 
-    public SecurityConfig(@Autowired CustomAuthenticationProvider customAuthenticationProvider) {
+    public SecurityConfig(@Autowired GenerateKey generateKey, @Autowired CustomAuthenticationProvider customAuthenticationProvider) {
         this.customAuthenticationProvider = customAuthenticationProvider;
+        this.generateKey = generateKey;
     }
 
     @Bean
@@ -89,7 +85,7 @@ public class SecurityConfig {
 
     @Bean
     JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(this.key).privateKey(this.priv).build();
+        JWK jwk = new RSAKey.Builder(this.generateKey.getRsaPublicKey()).privateKey(this.generateKey.getRsaPrivateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
     }

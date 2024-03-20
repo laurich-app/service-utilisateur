@@ -1,5 +1,6 @@
 package com.example.serviceutilisateur.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -10,11 +11,14 @@ import java.security.interfaces.RSAPublicKey;
 
 @Service
 public class CustomJwtDecoder {
-    @Value("${public.key}")
-    RSAPublicKey key;
+    private final GenerateKey generateKey;
+
+    public CustomJwtDecoder(@Autowired GenerateKey generateKey) {
+        this.generateKey = generateKey;
+    }
 
     @Bean
     JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(this.key).build();
+        return NimbusJwtDecoder.withPublicKey(this.generateKey.getRsaPublicKey()).build();
     }
 }
