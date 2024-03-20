@@ -1,6 +1,6 @@
 ### Inscription
 
-POST http://localhost:8080/auth/inscription
+POST http://localhost:8080/users
 Content-Type: application/json
 User-Agent: Intelij IDEA
 
@@ -16,12 +16,13 @@ User-Agent: Intelij IDEA
     });
     if(response.status === 201) {
         client.global.set("accessToken", response.headers.valueOf("Authorization").slice(7));
+        client.global.set("user_location", response.headers.valueOf("Location"));
     }
 %}
 
 ### Profil
 
-GET http://localhost:8080/users/me
+GET {{user_location}}
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -33,7 +34,7 @@ Authorization: Bearer {{accessToken}}
 
 ### Deconnexion
 
-DELETE http://localhost:8080/auth/deconnexion
+DELETE http://localhost:8080/auth/connexion
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -65,7 +66,7 @@ Content-Type: application/json
 
 ### Token de raffraichissement
 
-POST http://localhost:8080/auth/token_raffraichissement
+POST http://localhost:8080/auth/token
 Content-Type: application/json
 
 {
@@ -84,7 +85,7 @@ Content-Type: application/json
 
 ### User by ID
 
-GET http://localhost:8080/users/1
+GET http://localhost:8080/users/2
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -136,6 +137,18 @@ Authorization: Bearer {{accessToken}}
 > {%
     client.test("Request executed successfully", function() {
         // Unauthorized, only admin is available :)
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET http://localhost:8080/users/2
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}

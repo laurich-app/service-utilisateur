@@ -60,8 +60,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(autorize -> autorize
                         .requestMatchers(HttpMethod.POST, "/auth/connexion").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/inscription").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/token_raffraichissement").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/token").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .csrf((csrf) -> csrf.disable())

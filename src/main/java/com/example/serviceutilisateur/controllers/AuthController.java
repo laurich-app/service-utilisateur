@@ -27,11 +27,9 @@ import org.slf4j.LoggerFactory;
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final FacadeAuthentification facadeAuthentification;
-    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(@Autowired FacadeAuthentificationImpl facadeAuthentification, @Autowired PasswordEncoder passwordEncoder ) {
+    public AuthController(@Autowired FacadeAuthentificationImpl facadeAuthentification) {
         this.facadeAuthentification = facadeAuthentification;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/connexion")
@@ -46,25 +44,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/inscription")
-    public ResponseEntity<TokenDTO> register(@Valid @RequestBody InscriptionControllerDTO registerDTO, @RequestHeader("User-Agent") String userAgent) {
-        InscriptionDTO inscriptionDTO = new InscriptionDTO(
-                registerDTO.pseudo(),
-                registerDTO.email(),
-                this.passwordEncoder.encode(registerDTO.motDePasse()));
-        try {
-            logger.info("[Auth - Inscription] {} {}", registerDTO.email(), userAgent);
-            InscriptionControllerOutDTO inscription = this.facadeAuthentification.inscription(inscriptionDTO, userAgent);
-            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
-                .buildAndExpand(inscription.utilisateur().id()).toUri();
-            return ResponseEntity.created(location).header("Authorization", "Bearer " +inscription.tokenDTO().accessToken()).body(inscription.tokenDTO());
-        } catch (EmailDejaPrisException e) {
-            logger.error("[Auth - Inscription] {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-    }
-
-    @PostMapping("/token_raffraichissement")
+    @PostMapping("/token")
     public ResponseEntity<TokenDTO> tokenRaffraichissement(@Valid @RequestBody RefreshTokenDTO refreshTokenDTO, @RequestHeader("User-Agent") String userAgent) {
         try {
             logger.info("[Auth - Token Raffraichissement] {} {}", refreshTokenDTO, userAgent);
@@ -79,7 +59,7 @@ public class AuthController {
         }
     }
 
-    @DeleteMapping("/deconnexion")
+    @DeleteMapping("/connexion")
     public ResponseEntity deconnexion(@RequestHeader("Authorization") String authorization) {
         try {
             logger.info("[Auth - Deconnexion] {}", authorization);

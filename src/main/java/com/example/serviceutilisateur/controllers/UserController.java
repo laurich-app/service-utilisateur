@@ -1,24 +1,35 @@
 package com.example.serviceutilisateur.controllers;
 
+import com.example.serviceutilisateur.dtos.in.InscriptionControllerDTO;
+import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
+import com.example.serviceutilisateur.dtos.out.InscriptionControllerOutDTO;
+import com.example.serviceutilisateur.dtos.out.TokenDTO;
 import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
 import com.example.serviceutilisateur.dtos.pagination.Paginate;
 import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
 import com.example.serviceutilisateur.enums.RolesENUM;
+import com.example.serviceutilisateur.exceptions.EmailDejaPrisException;
 import com.example.serviceutilisateur.exceptions.UtilisateurInconnueException;
+import com.example.serviceutilisateur.facades.FacadeAuthentification;
+import com.example.serviceutilisateur.facades.FacadeAuthentificationImpl;
 import com.example.serviceutilisateur.facades.FacadeUtilisateur;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.security.Principal;
 import java.util.Set;
 
@@ -28,29 +39,40 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final FacadeUtilisateur facadeUtilisateur;
     private final Validator validator;
+    private final FacadeAuthentification facadeAuthentification;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(@Autowired FacadeUtilisateur facadeUtilisateur, @Autowired Validator validator) {
+    public UserController(@Autowired FacadeAuthentificationImpl facadeAuthentification, @Autowired PasswordEncoder passwordEncoder, @Autowired FacadeUtilisateur facadeUtilisateur, @Autowired Validator validator) {
         this.facadeUtilisateur = facadeUtilisateur;
         this.validator = validator;
+        this.facadeAuthentification = facadeAuthentification;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UtilisateurOutDTO> me(Principal principal) {
+    @PostMapping()
+    public ResponseEntity<TokenDTO> register(@Valid @RequestBody InscriptionControllerDTO registerDTO, @RequestHeader("User-Agent") String userAgent) {
+        InscriptionDTO inscriptionDTO = new InscriptionDTO(
+                registerDTO.pseudo(),
+                registerDTO.email(),
+                this.passwordEncoder.encode(registerDTO.motDePasse()));
         try {
-            logger.info("[Users - Me] {}", principal.getName());
-            UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(Long.valueOf(principal.getName()));
-            return ResponseEntity.ok(utilisateur);
-        } catch (UtilisateurInconnueException e) {
-            logger.error("[Users - Me] {}", e.getMessage());
-            return ResponseEntity.notFound().build();
+            logger.info("[Auth - Inscription] {} {}", registerDTO.email(), userAgent);
+            InscriptionControllerOutDTO inscription = this.facadeAuthentification.inscription(inscriptionDTO, userAgent);
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
+                    .buildAndExpand(inscription.utilisateur().id()).toUri();
+            return ResponseEntity.created(location).header("Authorization", "Bearer " +inscription.tokenDTO().accessToken()).body(inscription.tokenDTO());
+        } catch (EmailDejaPrisException e) {
+            logger.error("[Auth - Inscription] {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UtilisateurOutDTO> getUserById(@PathVariable(name = "id") Long id) {
+    @PreAuthorize("#id == authentication.principal.username or hasRole('GESTIONNAIRE')")
+    public ResponseEntity<UtilisateurOutDTO> getUserById(@PathVariable(name = "id") String id) {
         try {
             logger.info("[Users - getUserById] {}", id);
-            UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(id);
+            UtilisateurOutDTO utilisateur = this.facadeUtilisateur.getUserById(Long.valueOf(id));
             return ResponseEntity.ok(utilisateur);
         } catch (UtilisateurInconnueException e) {
             logger.error("[Users - getUserById] {}", e.getMessage());
