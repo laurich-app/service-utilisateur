@@ -1,10 +1,7 @@
 package com.example.serviceutilisateur.controllers;
 
 import com.example.serviceutilisateur.dtos.in.ConnexionDTO;
-import com.example.serviceutilisateur.dtos.in.InscriptionControllerDTO;
-import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
 import com.example.serviceutilisateur.dtos.in.RefreshTokenDTO;
-import com.example.serviceutilisateur.dtos.out.InscriptionControllerOutDTO;
 import com.example.serviceutilisateur.dtos.out.TokenDTO;
 import com.example.serviceutilisateur.exceptions.*;
 import com.example.serviceutilisateur.facades.FacadeAuthentification;
@@ -13,12 +10,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +29,8 @@ public class AuthController {
     @PostMapping("/connexion")
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody ConnexionDTO loginDTO, @RequestHeader("User-Agent") String userAgent) {
         try {
-            logger.info("[Auth - Login] {} {}", loginDTO.email(), userAgent);
+            String email = loginDTO.email();
+            logger.info("[Auth - Login] {} {}", email, userAgent);
             TokenDTO tokenDTO = this.facadeAuthentification.connexion(loginDTO, userAgent);
             return ResponseEntity.ok().header("Authorization", "Bearer " +tokenDTO.accessToken()).body(tokenDTO);
         } catch (UtilisateurInconnueException e) {
@@ -60,7 +55,7 @@ public class AuthController {
     }
 
     @DeleteMapping("/connexion")
-    public ResponseEntity deconnexion(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<Object> deconnexion(@RequestHeader("Authorization") String authorization) {
         try {
             logger.info("[Auth - Deconnexion] {}", authorization);
             String[] bearer = authorization.split(" ");

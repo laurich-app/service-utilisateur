@@ -4,6 +4,8 @@ import com.example.serviceutilisateur.config.GenerateKey;
 import com.example.serviceutilisateur.enums.RolesENUM;
 import com.example.serviceutilisateur.models.UtilisateurDAO;
 import com.example.serviceutilisateur.repositories.UtilisateurRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -23,9 +25,13 @@ public class StartupTask implements CommandLineRunner {
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
     private final GenerateKey generateKey;
+    private static final Logger logger = LoggerFactory.getLogger(StartupTask.class);
 
     @Value("${spring.cloud.consul.host}:${spring.cloud.consul.port}")
     private String discoveryUrl;
+
+    @Value("${spring.cloud.consul.enabled}")
+    private boolean springCloudConsulEnabled;
 
     public StartupTask(@Autowired GenerateKey generateKey, @Autowired UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
@@ -39,8 +45,8 @@ public class StartupTask implements CommandLineRunner {
         UtilisateurDAO utilisateurDAO = this.utilisateurRepository.findByEmail("root@root.com");
         if(utilisateurDAO == null)
             this.addRoot();
-
-        this.pushKey();
+        if(this.springCloudConsulEnabled)
+            this.pushKey();
     }
 
     private void pushKey() throws IOException, InterruptedException {
@@ -66,9 +72,9 @@ public class StartupTask implements CommandLineRunner {
 
         // Vérifiez la réponse
         if (response.statusCode() == 200) {
-            System.out.println("La clé publique a été mise à jour avec succès !");
+            logger.info("La clé publique a été mise à jour avec succès !");
         } else {
-            System.out.println("Une erreur s'est produite lors de la mise à jour de la clé publique : " + response.statusCode());
+            logger.error("Une erreur s'est produite lors de la mise à jour de la clé publique : {}", response.statusCode());
         }
     }
 
@@ -77,6 +83,7 @@ public class StartupTask implements CommandLineRunner {
         UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
         utilisateurDAO.setPseudo("root");
         utilisateurDAO.setEmail("root@root.com");
+        // Ce code n'est pas censé run en production, donc oui c'est une vulnérabilitée mais pour les tests actuels ces pratiques
         utilisateurDAO.setMotDePasse(this.passwordEncoder.encode("root"));
         utilisateurDAO.setRoles(List.of(RolesENUM.USER, RolesENUM.GESTIONNAIRE));
 

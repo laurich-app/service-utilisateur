@@ -7,13 +7,11 @@ import com.example.serviceutilisateur.dtos.out.TokenDTO;
 import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
 import com.example.serviceutilisateur.dtos.pagination.Paginate;
 import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
-import com.example.serviceutilisateur.enums.RolesENUM;
 import com.example.serviceutilisateur.exceptions.EmailDejaPrisException;
 import com.example.serviceutilisateur.exceptions.UtilisateurInconnueException;
 import com.example.serviceutilisateur.facades.FacadeAuthentification;
 import com.example.serviceutilisateur.facades.FacadeAuthentificationImpl;
 import com.example.serviceutilisateur.facades.FacadeUtilisateur;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.Set;
 
 @Controller
@@ -56,7 +53,8 @@ public class UserController {
                 registerDTO.email(),
                 this.passwordEncoder.encode(registerDTO.motDePasse()));
         try {
-            logger.info("[Auth - Inscription] {} {}", registerDTO.email(), userAgent);
+            String email = registerDTO.email();
+            logger.info("[Auth - Inscription] {} {}", email, userAgent);
             InscriptionControllerOutDTO inscription = this.facadeAuthentification.inscription(inscriptionDTO, userAgent);
             URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{pseudo}")
                     .buildAndExpand(inscription.utilisateur().id()).toUri();

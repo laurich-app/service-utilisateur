@@ -3,7 +3,6 @@ package com.example.serviceutilisateur.config;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -16,7 +15,7 @@ public class GenerateKey {
     private RSAPrivateKey rsaPrivateKey;
 
     @PostConstruct
-    public void run() throws FileNotFoundException, NoSuchAlgorithmException {
+    public void run() throws NoSuchAlgorithmException {
         this.genKey();
     }
 

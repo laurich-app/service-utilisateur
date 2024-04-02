@@ -1,15 +1,10 @@
 package com.example.serviceutilisateur.facades;
 
 import com.example.serviceutilisateur.dtos.in.ConnexionDTO;
-import com.example.serviceutilisateur.dtos.in.InscriptionControllerDTO;
 import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
 import com.example.serviceutilisateur.dtos.in.RefreshTokenDTO;
 import com.example.serviceutilisateur.dtos.out.InscriptionControllerOutDTO;
 import com.example.serviceutilisateur.dtos.out.TokenDTO;
-import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
-import com.example.serviceutilisateur.dtos.pagination.Paginate;
-import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
-import com.example.serviceutilisateur.dtos.pagination.Pagination;
 import com.example.serviceutilisateur.enums.RolesENUM;
 import com.example.serviceutilisateur.exceptions.*;
 import com.example.serviceutilisateur.models.TokenDAO;
@@ -17,19 +12,14 @@ import com.example.serviceutilisateur.models.UtilisateurDAO;
 import com.example.serviceutilisateur.repositories.TokenRepository;
 import com.example.serviceutilisateur.repositories.UtilisateurRepository;
 import com.example.serviceutilisateur.services.ServiceRabbitMQSender;
-import com.example.serviceutilisateur.utils.PageableUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.serviceutilisateur.services.TokenService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class FacadeAuthentificationImpl implements FacadeAuthentification {

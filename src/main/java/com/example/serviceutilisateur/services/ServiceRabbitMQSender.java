@@ -25,7 +25,7 @@ public class ServiceRabbitMQSender {
     }
 
     public void inscriptionBienvenue(InscriptionBienvenueDTO inscriptionBienvenueDTO){
-        logger.info("Inscription bienvenue : " + inscriptionBienvenueDTO);
+        logger.info("[RabbitMQ] Inscription bienvenue : {}", inscriptionBienvenueDTO);
         rabbitTemplate.convertAndSend(exchangeUtilisateurInscriptionBienvenue,routingkeyUtilisateurInscriptionBienvenue, inscriptionBienvenueDTO);
     }
 }

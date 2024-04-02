@@ -1,14 +1,10 @@
 package com.example.serviceutilisateur.facades;
 
 import com.example.serviceutilisateur.dtos.in.ConnexionDTO;
-import com.example.serviceutilisateur.dtos.in.InscriptionControllerDTO;
 import com.example.serviceutilisateur.dtos.in.InscriptionDTO;
 import com.example.serviceutilisateur.dtos.in.RefreshTokenDTO;
 import com.example.serviceutilisateur.dtos.out.InscriptionControllerOutDTO;
 import com.example.serviceutilisateur.dtos.out.TokenDTO;
-import com.example.serviceutilisateur.dtos.out.UtilisateurOutDTO;
-import com.example.serviceutilisateur.dtos.pagination.Paginate;
-import com.example.serviceutilisateur.dtos.pagination.PaginateRequestDTO;
 import com.example.serviceutilisateur.exceptions.*;
 
 public interface FacadeAuthentification {
